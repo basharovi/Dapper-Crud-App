@@ -11,17 +11,17 @@ namespace Dapper.Infrastructure.Repositories
 {
     public class ProductRepository : IProductRepository
     {
-        private readonly IConfiguration _configuration;
+        private readonly string _connectionString;
 
         public ProductRepository(IConfiguration configuration)
         {
-            _configuration = configuration;
+            _connectionString = configuration.GetConnectionString("DefaultConnection");
         }
         public async Task<int> AddAsync(Product entity)
         {
             entity.AddedOn = DateTime.Now;
             const string sql = "Insert into Products (Name,Description,Barcode,Rate,AddedOn) VALUES (@Name,@Description,@Barcode,@Rate,@AddedOn)";
-            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
                 var result = await connection.ExecuteAsync(sql, entity);
@@ -31,7 +31,7 @@ namespace Dapper.Infrastructure.Repositories
         public async Task<int> DeleteAsync(int id)
         {
             const string sql = "DELETE FROM Products WHERE Id = @Id";
-            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
                 var result = await connection.ExecuteAsync(sql, new { Id = id });
@@ -41,7 +41,7 @@ namespace Dapper.Infrastructure.Repositories
         public async Task<IReadOnlyList<Product>> GetAllAsync()
         {
             const string sql = "SELECT * FROM Products";
-            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
                 var result = await connection.QueryAsync<Product>(sql);
@@ -51,7 +51,7 @@ namespace Dapper.Infrastructure.Repositories
         public async Task<Product> GetByIdAsync(int id)
         {
             const string sql = "SELECT * FROM Products WHERE Id = @Id";
-            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
                 var result = await connection.QuerySingleOrDefaultAsync<Product>(sql, new { Id = id });
@@ -62,7 +62,7 @@ namespace Dapper.Infrastructure.Repositories
         {
             entity.ModifiedOn = DateTime.Now;
             const string sql = "UPDATE Products SET Name = @Name, Description = @Description, Barcode = @Barcode, Rate = @Rate, ModifiedOn = @ModifiedOn  WHERE Id = @Id";
-            using (var connection = new SqlConnection(_configuration.GetConnectionString("DefaultConnection")))
+            using (var connection = new SqlConnection(_connectionString))
             {
                 connection.Open();
                 var result = await connection.ExecuteAsync(sql, entity);
